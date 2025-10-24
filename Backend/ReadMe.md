@@ -1,0 +1,1 @@
+run npx nodemon for backend 
