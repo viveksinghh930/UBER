@@ -1,5 +1,9 @@
+const mapService = require('../services/maps.service');
 const rideService = require('../services/ride.service');
+
 const { validationResult } = require('express-validator');
+const { sendMessageToSocketId } = require('../socket');
+const rideModel = require('../models/ride.model');
 
 
 module.exports.createRide = async (req, res, next) => {
@@ -16,11 +20,22 @@ module.exports.createRide = async (req, res, next) => {
     
     try {
         const ride = await rideService.createRide({user:req.user._id,pickup,destination,vehicleType});
-         
-    
         
+        res.status(201).json(ride);
+        const pickupCoordinates = await mapService.getAddressCoordinate(pickup)
+        console.log(pickupCoordinates);
+        
+        const captainsInRadius = await mapService.getCaptainsInTheRadius(pickupCoordinates.ltd, pickupCoordinates.lng, 2)
+       ride.otp = ""
+       const rideWithUser = await rideModel.findOne({_id:ride._id}).populate("user")
+       captainsInRadius.map( captain =>{
+        sendMessageToSocketId(captain.socketId,{
+            event:'new-ride',
+            data:rideWithUser
+        })
 
-        return res.status(201).json(ride);
+       })
+
     } catch (error) {
         console.log(error);
         return res.status(500).json({message:'Internal server error'});
@@ -29,5 +44,28 @@ module.exports.createRide = async (req, res, next) => {
 }
 
  module.exports.getFare = async (req,res)=>{
+     const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+
+    try {
+    const { pickup, destination } = req.query;
+    
+    const pickupCoords = await mapService.getAddressCoordinate(pickup);
+    const destCoords = await mapService.getAddressCoordinate(destination);
+    
+    const fare = await rideService.getFare(pickupCoords, destCoords);
+
+        return res.status(200).json({fare});
+        
+    } catch (error) {
+
+        return res.status(500).json({message:'Internal server error'});
+        
+    }
+
     
  }

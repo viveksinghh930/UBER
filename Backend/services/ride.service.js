@@ -14,7 +14,7 @@ async function getFare(pickup, destination) {
     const baseFare = {
         auto: 35,
         car: 60,
-        moto: 25
+        moto: 2
     };
     const perKmRate = {
         auto: 10,
@@ -29,25 +29,26 @@ async function getFare(pickup, destination) {
 
 
     const fare = {
-        auto:
+        auto:Math.round(
             baseFare.auto +
-            (distanceTime.distance * perKmRate.auto) +
-            (distanceTime.duration * perMinuteRate.auto),
+            (parseFloat(distanceTime.distance) * perKmRate.auto) +
+            (distanceTime.duration * perMinuteRate.auto)),
 
-        car:
+        car: Math.round(
             baseFare.car +
-            (distanceTime.distance * perKmRate.car) +
-            (distanceTime.duration * perMinuteRate.car),
+            (parseFloat(distanceTime.distance) * perKmRate.car) +
+            (distanceTime.duration * perMinuteRate.car)),
 
         moto:
-            baseFare.moto +
-            (distanceTime.distance * perKmRate.moto) +
-            (distanceTime.duration * perMinuteRate.moto)
+          Math.round(baseFare.moto +
+            (parseFloat(distanceTime.distance) * perKmRate.moto) +
+            (distanceTime.duration * perMinuteRate.moto))
     };
 
     return fare
 }
-module.exports.getFare = getFare
+module.exports.getFare = getFare;
+
  function getOtp(num){
     function generateOtp(num){
         const otp = crypto.randomInt(Math.pow(10,num-1),Math.pow(10,num)).toString();

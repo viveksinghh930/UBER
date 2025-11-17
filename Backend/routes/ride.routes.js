@@ -16,9 +16,11 @@ const rideController = require('../controllers/ride.controller')
   )
 
   router.get('/get-fare',
-    authMiddleware.authUser,
-    
-    rideController.getFare
-  )
+  authMiddleware.authUser,
+  query('pickup').isString().isLength({min:3}).withMessage('Invalid pickup address'),
+  query('destination').isString().isLength({min:3}).withMessage('Invalid destination address'),
+  rideController.getFare
+)
+
 
 module.exports = router;
